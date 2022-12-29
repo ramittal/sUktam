@@ -2,15 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Web Speech Recorder</title>
+    <title>सूक्तम्</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
+
+<style>
+    textarea {
+        resize: none;
+    }
+</style>
+
 <body>
-    <p>
+    <h1 align="center">Pronunciation Scorer</h1>
+    <p align="center">
         <button id="start_button">Start recording</button>
         <button id="stop_button" disabled>Stop recording</button>
+        <button id="random_gen">Get a Random Phrase</button>
     </p>
-    <audio id="recordedAudio"></audio>
+
+    <p align="Center">
+        <textarea readonly id="sanskrit" rows="1" cols="25">Sanskrit</textarea>
+        <textarea readonly id="english" rows="1" cols="25">English</textarea>
+    </p>
+
+    <p align="center"><audio controls="" id="recordedAudio"></audio></p>
 </body>
 <script type="text/javascript">
     start_button.onclick = e => {
@@ -18,6 +33,21 @@
         stop_button.disabled = false;
         audioChunks = [];
         rec.start();
+    };
+
+    random_gen.onclick = e => {
+        $.ajax(
+            {
+                type: 'GET',
+                url: '/get_random_line',
+                success: function(result, status, xhr){
+                    console.log(result);
+                    const list = result.split(",");
+                    $('#sanskrit').val(list[2]);
+                    $('#english').val(list[1]);
+                }
+            }
+        );
     };
 
     stop_button.onclick = e => {

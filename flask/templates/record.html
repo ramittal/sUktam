@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>सूक्तम्</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+
+    <style>
+        textarea {
+            resize: none;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+    </style>
+
+    <body>
+        <h1>Pronunciation Scorer</h1>
+        <p>
+            <button id="start_button">Start recording</button>
+            <button id="stop_button" disabled>Stop recording</button>
+            <button id="random_gen">Get a Random Phrase</button>
+        </p>
+
+        <p>
+            <label for="sanskrit"></label><textarea readonly id="sanskrit" rows="1" cols="25">Sanskrit</textarea>
+            <label for="english"></label><textarea readonly id="english" rows="1" cols="25">English</textarea>
+        </p>
+
+        <p> Your Audio:
+        <p>
+            <audio controls id="recordedAudio"></audio>
+        </p>
+
+        <p> Prompt:
+        <p>
+            <audio controls id="promptedAudio"></audio>
+        </p>
+
+
+    </body>
+
+    <script type="text/javascript">
+        start_button.onclick = e => {
+            start_button.disabled = true;
+            stop_button.disabled = false;
+            audioChunks = [];
+            rec.start();
+        };
+
+        random_gen.onclick = e => {
+            $.ajax(
+                    {
+                        type: 'GET',
+                        url: '/get_random_line',
+                        success: function (result) {
+                            const list = result.split(",");
+                            $('#sanskrit').val(list[2]);
+                            $('#english').val(list[1]);
+
+                            var a = fetch('/get_random_audio/' + list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf(".")))
+                                    .then(res => {
+                                        var reader = res.body.getReader();
+                                        return reader.read().then(result => {return result});
+                                    }).then(data => {
+                                        console.log(data);
+                                        var blob = new Blob([data.value], {type: "audio/wav"});
+                                        var url = URL.createObjectURL(blob);
+
+                                        promptedAudio.src = url;
+                                        promptedAudio.controls = true;
+                                        promptedAudio.autoplay = true;
+                                    });
+                        }
+                    }
+            );
+
+
+        };
+
+        stop_button.onclick = e => {
+            start_button.disabled = false;
+            stop_button.disabled = true;
+            rec.stop();
+        };
+
+        navigator.mediaDevices
+                .getUserMedia({audio: true})
+                .then(stream => {
+                    handlerFunction(stream)
+                })
+
+        function handlerFunction(stream) {
+            rec = new MediaRecorder(stream);
+
+            rec.ondataavailable = e => {
+                audioChunks.push(e.data);
+                if (rec.state == "inactive") {
+                    let blob = new Blob(audioChunks, {type: 'audio/mpeg-3'});
+                    recordedAudio.src = URL.createObjectURL(blob);
+
+                    console.log(recordedAudio.src);
+
+                    recordedAudio.controls = true;
+                    recordedAudio.autoplay = false;
+                    sendData(blob);
+                }
+            }
+        }
+
+        function sendData(data) {
+            const form = new FormData();
+            form.append('file', data, 'data.mp3');
+
+            $.ajax({
+                type: 'POST',
+                url: '/save-record',
+                data: form,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    console.log("Data Recieved!");
+                }
+            });
+        }
+    </script>
+
+</html>

@@ -9,6 +9,15 @@
     <style>
         textarea {
             resize: none;
+            text-align: justify;
+            vertical-align: center;
+            text-align-last: center;
+        }
+
+        .ta_fs {
+            font-size: 20px;
+            color: red;
+
         }
 
         p {
@@ -24,7 +33,7 @@
     <body>
         <h1>Pronunciation Scorer</h1>
         <p>
-            <button id="start_button">Start recording</button>
+            <button id="start_button" disabled>Start recording</button>
             <button id="stop_button" disabled>Stop recording</button>
             <button id="random_gen">Get a Random Phrase</button>
         </p>
@@ -44,10 +53,30 @@
             <audio controls id="promptedAudio"></audio>
         </p>
 
+        <p>
+        <p>
+            <button id="score_get">Get my score!</button>
+        <p>
+            <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
+        </p>
+
 
     </body>
 
     <script type="text/javascript">
+        let audio_name = '';
+
+        score_get.onclick = e => {
+            $.ajax({
+                type: 'GET',
+                url: '/get_score/' + audio_name + "/",
+                success: function(result){
+                    $('#score').val(result);
+                }
+            });
+
+        };
+
         start_button.onclick = e => {
             start_button.disabled = true;
             stop_button.disabled = false;
@@ -55,7 +84,9 @@
             rec.start();
         };
 
+
         random_gen.onclick = e => {
+            start_button.disabled = false;
             $.ajax(
                     {
                         type: 'GET',
@@ -64,11 +95,13 @@
                             const list = result.split(",");
                             $('#sanskrit').val(list[2]);
                             $('#english').val(list[1]);
-
-                            var a = fetch('/get_random_audio/' + list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf(".")))
+                            audio_name = list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf("."));
+                            var a = fetch('/get_random_audio/' + audio_name)
                                     .then(res => {
                                         var reader = res.body.getReader();
-                                        return reader.read().then(result => {return result});
+                                        return reader.read().then(result => {
+                                            return result
+                                        });
                                     }).then(data => {
                                         console.log(data);
                                         var blob = new Blob([data.value], {type: "audio/wav"});
@@ -81,8 +114,6 @@
                         }
                     }
             );
-
-
         };
 
         stop_button.onclick = e => {
@@ -103,7 +134,7 @@
             rec.ondataavailable = e => {
                 audioChunks.push(e.data);
                 if (rec.state == "inactive") {
-                    let blob = new Blob(audioChunks, {type: 'audio/mpeg-3'});
+                    let blob = new Blob(audioChunks, {type: 'audio/wav'});
                     recordedAudio.src = URL.createObjectURL(blob);
 
                     console.log(recordedAudio.src);
@@ -117,7 +148,7 @@
 
         function sendData(data) {
             const form = new FormData();
-            form.append('file', data, 'data.mp3');
+            form.append('file', data, audio_name + ".wav");
 
             $.ajax({
                 type: 'POST',

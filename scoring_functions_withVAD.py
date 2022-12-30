@@ -42,7 +42,6 @@ class VAD:
         audio_speech = collect_chunks(speech_timestamps, audio)
         return audio_speech.numpy()
 
-
 vad_extractor = VAD()
 
 

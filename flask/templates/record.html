@@ -59,6 +59,13 @@
             <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
         </p>
 
+        <p>
+        <p>
+            <button id="score_get">Get my score!</button>
+        <p>
+            <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
+        </p>
+
 
     </body>
 
@@ -98,9 +105,9 @@
             rec.start();
         };
 
-
         random_button_element.onclick = () => {
             start_button_element.disabled = false;
+
             $.ajax(
                     {
                         type: 'GET',
@@ -110,7 +117,7 @@
                             $('#sanskrit').val(list[2]);
                             $('#english').val(list[1]);
                             audio_name = list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf("."));
-
+                          
                             fetch('/get_random_audio/' + audio_name)
                                     .then(res => {
                                         return res.body.getReader().read().then(result => {

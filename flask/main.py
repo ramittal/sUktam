@@ -1,3 +1,0 @@
-import web
-
-web.run()

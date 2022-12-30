@@ -10,10 +10,11 @@ from flask import request
 from flask_session import Session
 
 import scoring_functions_withVAD
-from pydub import AudioSegment
-from pydub.utils import which
 
-AudioSegment.converter = which("ffmpeg")
+_path = Path(__file__).parent.__str__() + "\\files"
+if not os.path.exists(_path):
+    os.mkdir(_path)
+
 UPLOAD_FOLDER = 'files'
 app = Flask(__name__)
 sess = Session()
@@ -21,10 +22,23 @@ sess = Session()
 app.config['SECRET_KEY'] = 'secretsecret'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SESSION_TYPE'] = 'filesystem'
+
 sess.init_app(app)
-_path = Path(__file__).parent.__str__() + "\\files"
-if not os.path.exists(_path):
-    os.mkdir(_path)
+
+
+# Get score from recently uploaded file
+@app.route('/get_score/<audio_id>/', methods=['GET'])
+def get_score(audio_id):
+    # find user audio from "files"
+    path_user = Path(__file__).parent.__str__() + "\\files\\" + audio_id + ".wav"
+
+    # find corresponding proper audio
+    path_proper = Path(__file__).parent.parent.__str__() + "\\hackathon_data\\" + audio_id + ".wav"
+
+    user_series, sr = librosa.load(path_user, sr=16000)
+    proper_series, sr = librosa.load(path_proper, sr=16000)
+
+    return str(round(100 * scoring_functions_withVAD.score_pronunciation(proper_series, user_series))) + '%'
 
 
 # Get score from recently uploaded file
@@ -53,7 +67,6 @@ def favicon():
 def get_random_line():
     path = Path(__file__).parent.parent.__str__() + "\\reference_files.txt"
     lines = open(path, encoding="UTF-8").readlines()[1:]
-
     return random.choice(lines)
 
 

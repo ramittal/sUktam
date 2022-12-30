@@ -9,6 +9,14 @@
     <style>
         textarea {
             resize: none;
+            text-align: justify;
+            vertical-align: center;
+            text-align-last: center;
+        }
+
+        .ta_fs {
+            font-size: 20px;
+            color: #ff0000;
         }
 
         p {
@@ -24,9 +32,9 @@
     <body>
         <h1>Pronunciation Scorer</h1>
         <p>
-            <button id="start_button">Start recording</button>
+            <button id="start_button" disabled>Start recording</button>
             <button id="stop_button" disabled>Stop recording</button>
-            <button id="random_gen">Get a Random Phrase</button>
+            <button id="random_button">Get a Random Phrase</button>
         </p>
 
         <p>
@@ -36,26 +44,63 @@
 
         <p> Your Audio:
         <p>
-            <audio controls id="recordedAudio"></audio>
+            <audio controls id="recorded_audio"></audio>
         </p>
 
         <p> Prompt:
         <p>
-            <audio controls id="promptedAudio"></audio>
+            <audio controls id="prompted_audio"></audio>
+        </p>
+
+        <p>
+        <p>
+            <button id="score_button">Get my score!</button>
+        <p>
+            <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
         </p>
 
 
     </body>
 
     <script type="text/javascript">
-        start_button.onclick = e => {
-            start_button.disabled = true;
-            stop_button.disabled = false;
+        let start_button_element = document.getElementById("start_button");
+        let stop_button_element = document.getElementById("stop_button");
+        let score_button_element = document.getElementById("score_button");
+        let random_button_element = document.getElementById("random_button");
+        let prompted_audio_element = document.getElementById("prompted_audio");
+        let recorded_audio_element = document.getElementById("recorded_audio");
+
+        let audio_name = '';
+        let rec = null;
+        let audioChunks = []
+
+        score_button_element.onclick = () => {
+            $.ajax({
+                type: 'GET',
+                url: '/get_score/' + audio_name + "/",
+                success: function (result) {
+                    $('#score').val(result);
+                }
+            });
+        };
+
+
+        stop_button_element.onclick = () => {
+            start_button_element.disabled = false;
+            stop_button_element.disabled = true;
+            rec.stop();
+        };
+
+        start_button_element.onclick = () => {
+            start_button_element.disabled = true;
+            stop_button_element.disabled = false;
             audioChunks = [];
             rec.start();
         };
 
-        random_gen.onclick = e => {
+
+        random_button_element.onclick = () => {
+            start_button_element.disabled = false;
             $.ajax(
                     {
                         type: 'GET',
@@ -64,73 +109,61 @@
                             const list = result.split(",");
                             $('#sanskrit').val(list[2]);
                             $('#english').val(list[1]);
+                            audio_name = list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf("."));
 
-                            var a = fetch('/get_random_audio/' + list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf(".")))
+                            fetch('/get_random_audio/' + audio_name)
                                     .then(res => {
-                                        var reader = res.body.getReader();
-                                        return reader.read().then(result => {return result});
-                                    }).then(data => {
-                                        console.log(data);
-                                        var blob = new Blob([data.value], {type: "audio/wav"});
-                                        var url = URL.createObjectURL(blob);
+                                        return res.body.getReader().read().then(result => {
+                                            return result
+                                        });
+                                    })
+                                    .then(data => {
+                                        const blob = new Blob([data.value], {type: "audio/wav"});
 
-                                        promptedAudio.src = url;
-                                        promptedAudio.controls = true;
-                                        promptedAudio.autoplay = true;
+                                        prompted_audio_element.src = URL.createObjectURL(blob);
+                                        prompted_audio_element.controls = true;
+                                        prompted_audio_element.autoplay = true;
                                     });
                         }
                     }
             );
-
-
-        };
-
-        stop_button.onclick = e => {
-            start_button.disabled = false;
-            stop_button.disabled = true;
-            rec.stop();
         };
 
         navigator.mediaDevices
                 .getUserMedia({audio: true})
                 .then(stream => {
-                    handlerFunction(stream)
-                })
+                    //create new recorder object
+                    rec = new MediaRecorder(stream);
 
-        function handlerFunction(stream) {
-            rec = new MediaRecorder(stream);
+                    //stream data from recorder to list
+                    rec.ondataavailable = e => {
+                        audioChunks.push(e.data);
+                        //once recorder is done send data to server
+                        if (rec.state === "inactive") {
+                            let blob = new Blob(audioChunks, {type: 'audio/wav'});
 
-            rec.ondataavailable = e => {
-                audioChunks.push(e.data);
-                if (rec.state == "inactive") {
-                    let blob = new Blob(audioChunks, {type: 'audio/mpeg-3'});
-                    recordedAudio.src = URL.createObjectURL(blob);
+                            //enabled audio playback
+                            recorded_audio_element.src = URL.createObjectURL(blob);
+                            recorded_audio_element.controls = true;
+                            recorded_audio_element.autoplay = false;
 
-                    console.log(recordedAudio.src);
-
-                    recordedAudio.controls = true;
-                    recordedAudio.autoplay = false;
-                    sendData(blob);
-                }
-            }
-        }
-
-        function sendData(data) {
-            const form = new FormData();
-            form.append('file', data, 'data.mp3');
-
-            $.ajax({
-                type: 'POST',
-                url: '/save-record',
-                data: form,
-                cache: false,
-                processData: false,
-                contentType: false,
-                success: function () {
-                    console.log("Data Recieved!");
-                }
-            });
-        }
+                            //create file to send to server
+                            const form = new FormData();
+                            form.append('file', blob, audio_name + ".wav");
+                            $.ajax({
+                                type: 'POST',
+                                url: '/save-record',
+                                data: form,
+                                cache: false,
+                                processData: false,
+                                contentType: false,
+                                success: function () {
+                                    console.log("Data Received!");
+                                }
+                            });
+                        }
+                    }
+                });
     </script>
 
 </html>

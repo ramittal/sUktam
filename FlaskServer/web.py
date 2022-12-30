@@ -41,21 +41,6 @@ def get_score(audio_id):
     return str(round(100 * scoring_functions_withVAD.score_pronunciation(proper_series, user_series))) + '%'
 
 
-# Get score from recently uploaded file
-@app.route('/get_score/<audio_id>/', methods=['GET'])
-def get_score(audio_id):
-    # find user audio from "files"
-    path_user = Path(__file__).parent.__str__() + "\\files\\" + audio_id + ".wav"
-
-    # find corresponding proper audio
-    path_proper = Path(__file__).parent.parent.__str__() + "\\hackathon_data\\" + audio_id + ".wav"
-
-    user_series, sr = librosa.load(path_user, sr=16000)
-    proper_series, sr = librosa.load(path_proper, sr=16000)
-
-    return str(round(100*scoring_functions_withVAD.score_pronunciation(proper_series, user_series))) + '%'
-
-
 # Dummy response to satisfy website if it does get request to .../favicon.ico
 @app.route('/favicon.ico', methods=['GET'])
 def favicon():

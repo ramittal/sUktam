@@ -2,14 +2,14 @@ import os
 import random
 from pathlib import Path
 
-import librosa
 from flask import Flask, flash, send_from_directory
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask_session import Session
+from librosa import load
 
-import scoring_functions_withVAD
+from FlaskServer.ScoringFunctions import scoring_functions_withVAD
 
 _path = Path(__file__).parent.__str__() + "\\files"
 if not os.path.exists(_path):
@@ -19,7 +19,7 @@ UPLOAD_FOLDER = 'files'
 app = Flask(__name__)
 sess = Session()
 
-app.config['SECRET_KEY'] = 'secretsecret'
+app.config['SECRET_KEY'] = 'secret_secret'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SESSION_TYPE'] = 'filesystem'
 
@@ -30,13 +30,13 @@ sess.init_app(app)
 @app.route('/get_score/<audio_id>/', methods=['GET'])
 def get_score(audio_id):
     # find user audio from "files"
-    path_user = Path(__file__).parent.__str__() + "\\files\\" + audio_id + ".wav"
+    path_user = Path(__file__).parent.__str__() + "\\files\\" + audio_id + ".mp3"
 
     # find corresponding proper audio
     path_proper = Path(__file__).parent.parent.__str__() + "\\hackathon_data\\" + audio_id + ".wav"
 
-    user_series, sr = librosa.load(path_user, sr=16000)
-    proper_series, sr = librosa.load(path_proper, sr=16000)
+    user_series, sr = load(path_user, sr=16000)
+    proper_series, sr = load(path_proper, sr=16000)
 
     return str(round(100 * scoring_functions_withVAD.score_pronunciation(proper_series, user_series))) + '%'
 
@@ -50,7 +50,7 @@ def favicon():
 # Navigation to url will generate random choice and return to HTML
 @app.route('/get_random_line', methods=['GET'])
 def get_random_line():
-    path = Path(__file__).parent.parent.__str__() + "\\reference_files.txt"
+    path = Path(__file__).parent.__str__() + "\\reference_files.txt"
     lines = open(path, encoding="UTF-8").readlines()[1:]
     return random.choice(lines)
 
@@ -95,10 +95,9 @@ def get_random_audio(audio_id):
     audio_id = audio_id + ".wav"
     for file in os.listdir(path):
         if file.endswith(audio_id):
-            with open(path + "\\" + file, "rb") as f:
-                return send_from_directory(
-                    directory=path,
-                    path=audio_id)
+            return send_from_directory(
+                directory=path,
+                path=audio_id)
     return None
 
 

@@ -1,4 +1,4 @@
-audio_file,text_en,text_sa
+audio_file, text_en,text_sa
 hackathon_data/2-Introductions_012.wav,bhavataH nAma kim?,भवतः नाम किम्?
 hackathon_data/2-Introductions_016.wav,bhavatyAH nAma kim?,भवत्याः नाम किम्?
 hackathon_data/2-Introductions_019.wav,mama nAma rAmaH,मम नाम रामः

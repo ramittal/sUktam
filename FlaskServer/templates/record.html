@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>सूक्तम्</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <title>सूक्तम्</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
 
-<style>
+    <style>
         textarea {
             resize: none;
             text-align: justify;
@@ -28,49 +28,40 @@
         }
 
 
-</style>
+    </style>
 
-<body>
-<h1>Pronunciation Scorer</h1>
-<p>
-    <button id="start_button" disabled>Start recording</button>
-    <button id="stop_button" disabled>Stop recording</button>
-    <button id="random_button">Get a Random Phrase</button>
-</p>
+    <body>
+        <h1>Pronunciation Scorer</h1>
+        <p>
+            <button id="start_button" disabled>Start recording</button>
+            <button id="stop_button" disabled>Stop recording</button>
+            <button id="random_button">Get a Random Phrase</button>
+        </p>
 
-<p>
-    <label for="sanskrit"></label><textarea readonly id="sanskrit" rows="1" cols="25">Sanskrit</textarea>
-    <label for="english"></label><textarea readonly id="english" rows="1" cols="25">English</textarea>
-</p>
+        <p>
+            <label for="sanskrit"></label><textarea readonly id="sanskrit" rows="1" cols="25">Sanskrit</textarea>
+            <label for="english"></label><textarea readonly id="english" rows="1" cols="25">English</textarea>
+        </p>
 
-<p> Your Audio:
-<p>
-    <audio controls id="recorded_audio"></audio>
-</p>
+        <p> Your Audio:
+        <p>
+            <audio controls id="recorded_audio"></audio>
+        </p>
 
-<p> Prompt:
-<p>
-    <audio controls id="prompted_audio"></audio>
-</p>
-
-<p>
-<p>
-    <button id="score_button">Get my score!</button>
-<p>
-    <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
-</p>
+        <p> Prompt:
+        <p>
+            <audio controls id="prompted_audio"></audio>
+        </p>
 
         <p>
         <p>
-            <button id="score_get">Get my score!</button>
+            <button id="score_button">Get my score!</button>
         <p>
             <label for="score"></label><textarea readonly class="ta_fs" id="score" rows="5" cols="10">Score</textarea>
         </p>
+    </body>
 
-
-</body>
-
-<script type="text/javascript">
+    <script type="text/javascript">
         let start_button_element = document.getElementById("start_button");
         let stop_button_element = document.getElementById("stop_button");
         let score_button_element = document.getElementById("score_button");
@@ -118,7 +109,7 @@
                             $('#sanskrit').val(list[2]);
                             $('#english').val(list[1]);
                             audio_name = list[0].substring(list[0].indexOf("/") + 1, list[0].lastIndexOf("."));
-                          
+
                             fetch('/get_random_audio/' + audio_name)
                                     .then(res => {
                                         return res.body.getReader().read().then(result => {
@@ -126,7 +117,7 @@
                                         });
                                     })
                                     .then(data => {
-                                        const blob = new Blob([data.value], {type: "audio/wav"});
+                                        const blob = new Blob([data.value], {type: "audio/mpeg-3"});
 
                                         prompted_audio_element.src = URL.createObjectURL(blob);
                                         prompted_audio_element.controls = true;
@@ -148,7 +139,7 @@
                         audioChunks.push(e.data);
                         //once recorder is done send data to server
                         if (rec.state === "inactive") {
-                            let blob = new Blob(audioChunks, {type: 'audio/wav'});
+                            let blob = new Blob(audioChunks, {type: 'audio/mpeg-3'});
 
                             //enabled audio playback
                             recorded_audio_element.src = URL.createObjectURL(blob);
@@ -157,7 +148,7 @@
 
                             //create file to send to server
                             const form = new FormData();
-                            form.append('file', blob, audio_name + ".wav");
+                            form.append('file', blob, audio_name + ".mp3");
                             $.ajax({
                                 type: 'POST',
                                 url: '/save-record',
@@ -173,6 +164,6 @@
                     }
                 });
 
-</script>
+    </script>
 
 </html>

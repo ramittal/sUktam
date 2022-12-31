@@ -1,6 +1,5 @@
-<!DOCTYPE html>
 <html lang="en">
-    <style>
+<style>
         .title {
             color: #ee3434; 
             font-size: 30px; 
@@ -14,7 +13,7 @@
             font-family: "Consolas",serif;
         }  
         .header {
-            text-align:center;
+            text-align: center;
             font-size: 18px;
             font-style: italic;
             font-family: "Calibri Light",serif;
@@ -25,8 +24,10 @@
             font-family: "Calibri Light", serif;
         }
     </style>
-<body>
-<p class="title">सूक्तम्</p>
+</html>
+
+## सूक्तम्
+
 <h4 class="header">An application built to help users practice Sanskrit pronunciation.</h4>
 <hr>
 <h4 class="header2"> How to run on a server:</h4>
@@ -46,5 +47,3 @@
 
 </ol>
 </blockquote>
-</body>
-</html>

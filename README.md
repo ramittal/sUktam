@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
     <style>
         .title {
@@ -26,7 +25,7 @@
             font-family: "Calibri Light", serif;
         }
     </style>
-
+<body>
 <p class="title">सूक्तम्</p>
 <h4 class="header">An application built to help users practice Sanskrit pronunciation.</h4>
 <hr>
@@ -47,5 +46,5 @@
 
 </ol>
 </blockquote>
-
+</body>
 </html>

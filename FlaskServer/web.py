@@ -101,5 +101,5 @@ def get_random_audio(audio_id):
     return None
 
 
-def run():
-    app.run(host="127.0.0.1", port=7000, debug=True)
+def run(host, port, debug):
+    app.run(host, port, debug)

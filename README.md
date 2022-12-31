@@ -26,7 +26,6 @@
             font-family: "Calibri Light", serif;
         }
     </style>
-</html>
 
 <p class="title">सूक्तम्</p>
 <h4 class="header">An application built to help users practice Sanskrit pronunciation.</h4>
@@ -48,3 +47,5 @@
 
 </ol>
 </blockquote>
+
+</html>
